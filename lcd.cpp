@@ -16,7 +16,7 @@
 
 void LCD::init()
 {
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < sizeof(DB); i++) {
     gpio_init(DB[i]);
     gpio_set_dir(DB[i], GPIO_OUT);
     gpio_put(DB[i], 0);
@@ -87,16 +87,16 @@ void LCD::clear()
 {
   page0();
   set_address(0);
-  for (int y = 0; y < 8; y++) {
+  for (int y = 0; y < kPageHeight; y++) {
     set_page(y);
-    for (int x = 0; x < 64; x++)
+    for (int x = 0; x < kPageWidth; x++)
       write(0x00);
   }
   page1();
   set_address(0);
-  for (int y = 0; y < 8; y++) {
+  for (int y = 0; y < kPageHeight; y++) {
     set_page(y);
-    for (int x = 0; x < 64; x++)
+    for (int x = 0; x < kPageWidth; x++)
       write(0x00);
   }
 }
@@ -172,7 +172,7 @@ void LCD::write(uint8_t data)
   wait_busy();
   gpio_put(RS, 1);
   gpio_put(RW, 0);
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < sizeof(DB); i++) {
     gpio_put(DB[i], data & 1 > 0 ? 1 : 0);
     data >>= 1;
   }
@@ -185,19 +185,20 @@ uint8_t LCD::read()
   wait_busy();
   gpio_put(RS, 1);
   gpio_put(RW, 1);
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < sizeof(DB); i++)
     gpio_set_dir(DB[i], GPIO_IN);
 
   gpio_put(EN, 1);
-  sleep_us(CLOCK_DELAY);
+  sleep_us(kClockDelay);
 
   uint8_t data = 0;
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < sizeof(DB); i++)
     data |= gpio_get(DB[i]) << i;
 
   gpio_put(EN, 0);
+  sleep_us(kClockDelay);
 
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < sizeof(DB); i++)
     gpio_set_dir(DB[i], GPIO_OUT);
 
   return data;
@@ -218,13 +219,14 @@ uint8_t LCD::status()
   gpio_set_dir(DB[7], GPIO_IN);
 
   gpio_put(EN, 1);
-  sleep_us(CLOCK_DELAY);
+  sleep_us(kClockDelay);
 
   uint8_t status = 0;
   status |= gpio_get(DB[4]) << 4;
   status |= gpio_get(DB[5]) << 5;
   status |= gpio_get(DB[7]) << 7;
   gpio_put(EN, 0);
+  sleep_us(kClockDelay);
 
   gpio_set_dir(DB[4], GPIO_OUT);
   gpio_set_dir(DB[5], GPIO_OUT);
@@ -242,10 +244,10 @@ void LCD::wait_busy()
   bool busy = false;
   do {
     gpio_put(EN, 1);
-    sleep_us(CLOCK_DELAY);
+    sleep_us(kClockDelay);
     busy = gpio_get(DB[7]);
     gpio_put(EN, 0);
-    sleep_us(CLOCK_DELAY);
+    sleep_us(kClockDelay);
   } while (busy);
 
   gpio_set_dir(DB[7], GPIO_OUT);

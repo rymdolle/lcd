@@ -20,12 +20,11 @@
 
 #include "pico/stdlib.h"
 
-#define CLOCK_DELAY 20
-
 // JHD12864E LCD
 class LCD {
-  typedef uint8_t byte;
 private:
+  typedef uint8_t byte;
+
   byte RS;
   byte RW;
   byte EN;
@@ -36,17 +35,23 @@ private:
 
   void toggle_clock() {
     gpio_put(EN, 1);
-    sleep_us(CLOCK_DELAY);
+    sleep_us(kClockDelay);
     gpio_put(EN, 0);
-    sleep_us(CLOCK_DELAY);
+    sleep_us(kClockDelay);
   }
 
 public:
-  enum status {
-    RESET = 1 << 4,
-    ONOFF = 1 << 5,
-    BUSY = 1 << 7,
+  enum class Status: uint8_t {
+    kReset = 1 << 4,
+    kOnOff = 1 << 5,
+    kBusy = 1 << 7,
   };
+
+  static constexpr int kClockDelay = 4;
+  static constexpr int kPageWidth  = 64;
+  static constexpr int kPageHeight = 8;
+  static constexpr int kDisplayWidth  = kPageWidth * 2;
+  static constexpr int kDisplayHeight = 64;
 
   LCD(byte (&data)[8], byte rs, byte rw, byte en, byte cs1, byte cs2, byte rst) {
     for (int i = 0; i < 8; i++)
