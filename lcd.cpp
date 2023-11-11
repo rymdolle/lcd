@@ -147,10 +147,10 @@ void LCD::set_address(uint8_t address)
 
   gpio_put(DB[0], address & 0x01);
   gpio_put(DB[1], address & 0x02);
-  gpio_put(DB[2], address & 0x03);
-  gpio_put(DB[3], address & 0x04);
-  gpio_put(DB[4], address & 0x05);
-  gpio_put(DB[5], address & 0x06);
+  gpio_put(DB[2], address & 0x04);
+  gpio_put(DB[3], address & 0x08);
+  gpio_put(DB[4], address & 0x10);
+  gpio_put(DB[5], address & 0x20);
 
   toggle_clock();
 }
